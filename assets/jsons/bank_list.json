@@ -1,0 +1,876 @@
+{
+    "status": 1,
+    "data": [
+        {
+            "kode_bank": "008",
+            "bank_id": "mandiri",
+            "nama_bank": "BANK MANDIRI",
+            "url_image": "https://api-mitra.linkqu.id/app/assets/008-6E25554009454B2C39C31A7DA1EA342E.png"
+        },
+        {
+            "kode_bank": "002",
+            "bank_id": "bri",
+            "nama_bank": "BANK BRI",
+            "url_image": "https://api-mitra.linkqu.id/app/assets/002-1C775E5BCC0365D54B137C4B45D13619.png"
+        },
+        {
+            "kode_bank": "009",
+            "bank_id": "bni",
+            "nama_bank": "BANK BNI",
+            "url_image": "https://api-mitra.linkqu.id/app/assets/009-B2B4E02C58AEFC11FBC88173F9B4DEF5.png"
+        },
+        {
+            "kode_bank": "014",
+            "nama_bank": "BANK BCA",
+            "url_image": "https://api-mitra.linkqu.id/app/assets/014-D8C6EBB4ADD1B0081587E6C0288E5793.png"
+        },
+        {
+            "kode_bank": "451",
+            "nama_bank": "BANK BSI",
+            "url_image": "https://api-mitra.linkqu.id/app/assets/451-116ECBFA3A8AF9A7CDF4E4518B4FE9F6.png"
+        },
+        {
+            "kode_bank": "011",
+            "nama_bank": "BANK DANAMON",
+            "url_image": "https://api-mitra.linkqu.id/app/assets/011-8263D8A10B42FF5F73CD7306F34DE7DC.png"
+        },
+        {
+            "kode_bank": "013",
+            "nama_bank": "BANK PERMATA",
+            "id": 7,
+            "isActive": true,
+            "urutan": 8,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/013-F4309A2083E8BEF191E739494AE6DCA6.png"
+        },
+        {
+            "kode_bank": "016",
+            "nama_bank": "MAYBANK INDONESIA",
+            "id": 9,
+            "isActive": true,
+            "urutan": 9,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/016-369DF0EB4D5FD6C501BB0B8521A897AF.png"
+        },
+        {
+            "kode_bank": "019",
+            "nama_bank": "BANK PANIN",
+            "id": 10,
+            "isActive": true,
+            "urutan": 10,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/019-030852AEC5D9DD1F669A6D1BFBCF2FAC.png"
+        },
+        {
+            "kode_bank": "022",
+            "nama_bank": "BANK CIMB NIAGA",
+            "id": 12,
+            "isActive": true,
+            "urutan": 11,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/022-17A4763ED7E924D8E6FA939F6266D881.png"
+        },
+        {
+            "kode_bank": "057",
+            "nama_bank": "BANK BNP PARIBAS INDONESIA",
+            "id": 35,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/057-D3ADA428B94A929A4FAB73F47F4C330B.png"
+        },
+        {
+            "kode_bank": "033",
+            "nama_bank": "BANK OF AMERICA",
+            "id": 19,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/033-C2EF8E9B9E67B5C7E387167D728EDE03.png"
+        },
+        {
+            "kode_bank": "047",
+            "nama_bank": "BANK RESONA PERDANIA",
+            "id": 29,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/047-E54E24B1D8ABDE7836AF1EAE12E66E8B.png"
+        },
+        {
+            "kode_bank": "506",
+            "nama_bank": "BANK MEGA SYARIAH",
+            "id": 109,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/506-E11E99D34A7DAB2F2608A9C8DF7C7CEB.png"
+        },
+        {
+            "kode_bank": "037",
+            "nama_bank": "BANK ARTHA GRAHA INTERNASIONAL",
+            "id": 22,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/037-24B1357BB768B96142DB63B789D37107.png"
+        },
+        {
+            "kode_bank": "517",
+            "nama_bank": "BANK PANIN DUBAI SYARIAH",
+            "id": 111,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/517-D0A617DD24B6F4996C4B63FE2729AD50.png"
+        },
+        {
+            "kode_bank": "076",
+            "nama_bank": "BANK BUMI ARTA",
+            "id": 43,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/076-EB6A7EDE7CFEC8F9E6A4EEA618955847.png"
+        },
+        {
+            "kode_bank": "600",
+            "nama_bank": "BPR SUPRA ARTAPERSADA",
+            "id": 607,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/600-E5F4CBDCB0429D4A39C3C11087AB7C5E.png"
+        },
+        {
+            "kode_bank": "688",
+            "nama_bank": "BPR KARYAJATNIKA SADAYA",
+            "id": 608,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/688-2491ED1025C2877C308C8CBAA85D80DB.png"
+        },
+        {
+            "kode_bank": "040",
+            "nama_bank": "BANGKOK BANK",
+            "id": 24,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/040-B8073622A39C7A9923A1FEEE3DD18DF7.png"
+        },
+        {
+            "kode_bank": "151",
+            "nama_bank": "BANK MESTIKA DHARMA",
+            "id": 79,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/151-B9F91E2C9CC8A4468F1252013D74A482.png"
+        },
+        {
+            "kode_bank": "036",
+            "nama_bank": "BANK CCB INDONESIA",
+            "id": 21,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/036-5A7ADC4A4413DA989664B4DFDD87701E.png"
+        },
+        {
+            "kode_bank": "095",
+            "nama_bank": "BANK J TRUST INDONESIA",
+            "id": 48,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/095-DF8F78D5B7CD6607FBC143BF2DCC1E23.png"
+        },
+        {
+            "kode_bank": "067",
+            "nama_bank": "DEUTSCHE BANK AG.",
+            "id": 40,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/067-7D4576C94E712F8FAEBCC987C01C44DC.png"
+        },
+        {
+            "kode_bank": "042",
+            "nama_bank": "MUFG BANK",
+            "id": 26,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/042-6611E7D549DE83D19D61DADA8469038F.png"
+        },
+        {
+            "kode_bank": "472",
+            "nama_bank": "BANK JASA JAKARTA",
+            "id": 100,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/472-DC8F685F4299F5554AEC463F558906E5.png"
+        },
+        {
+            "kode_bank": "157",
+            "nama_bank": "BANK MASPION INDONESIA",
+            "id": 82,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/157-78F19C3D46D556065B8154E5F861B6F3.png"
+        },
+        {
+            "kode_bank": "152",
+            "nama_bank": "BANK SHINHAN INDONESIA",
+            "id": 80,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/152-BF9D151151DDE618EAF4C322C5F1005B.png"
+        },
+        {
+            "kode_bank": "048",
+            "nama_bank": "BANK MIZUHO INDONESIA",
+            "id": 30,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/048-52CB9A504894618570D9A172DE72B938.png"
+        },
+        {
+            "kode_bank": "145",
+            "nama_bank": "BANK NUSANTARA PARAHYANGAN",
+            "id": 76,
+            "isActive": true,
+            "urutan": 999
+        },
+        {
+            "kode_bank": "134",
+            "nama_bank": "BANK SULTENG",
+            "id": 74,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/134-BC35FDB32FC7BC74036D9A64D9EBBA6B.png"
+        },
+        {
+            "kode_bank": "087",
+            "nama_bank": "BANK HSBC INDONESIA",
+            "id": 44,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/087-6854A0F5A80C9713D47382002E3B3D8A.png"
+        },
+        {
+            "kode_bank": "110",
+            "nama_bank": "BANK BJB",
+            "id": 50,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/110-9EC3D3F28D130BD4170357C1432E37F3.png"
+        },
+        {
+            "kode_bank": "111",
+            "nama_bank": "BANK DKI",
+            "id": 51,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/111-88A8D1615FE0DE4F7A184192F506DBD4.png"
+        },
+        {
+            "kode_bank": "116",
+            "nama_bank": "BANK ACEH SYARIAH",
+            "id": 56,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/116-3973821F6BA85FE0BDEBCDAE460B1E84.png"
+        },
+        {
+            "kode_bank": "147",
+            "nama_bank": "BANK MUAMALAT INDONESIA",
+            "id": 78,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/147-8A297A972BBBBDA038502C4046914432.png"
+        },
+        {
+            "kode_bank": "114",
+            "nama_bank": "BANK JATIM",
+            "id": 54,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/114-3405600EC1676CD7ECA01214DC99CAAA.png"
+        },
+        {
+            "kode_bank": "113",
+            "nama_bank": "BANK JATENG",
+            "id": 53,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/113-FCCB16C9C2C09172169DEB291A8733BB.png"
+        },
+        {
+            "kode_bank": "133",
+            "nama_bank": "BANK BENGKULU",
+            "id": 73,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/133-69CE5FDC97BBB3DF79C94DE65E758D60.png"
+        },
+        {
+            "kode_bank": "128",
+            "nama_bank": "BANK NTB SYARIAH",
+            "id": 68,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/128-4E2254E1DE5E349F749FA6106A1E3402.png"
+        },
+        {
+            "kode_bank": "425",
+            "nama_bank": "BANK BJB SYARIAH",
+            "id": 601,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/425-B40E7DA5B616B80525FE2B5477763D4C.png"
+        },
+        {
+            "kode_bank": "536",
+            "nama_bank": "BANK BCA SYARIAH",
+            "id": 119,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/536-1B2648B663B25903A4F6B5C364BE47D9.png"
+        },
+        {
+            "kode_bank": "112",
+            "nama_bank": "BPD DIY",
+            "id": 52,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/112-0D6C92C0F4BB3477AD7DB98609CE2ABB.png"
+        },
+        {
+            "kode_bank": "046",
+            "nama_bank": "BANK DBS INDONESIA",
+            "id": 28,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/046-6CA64E6F2A71EE597FD56790B968D9A1.png"
+        },
+        {
+            "kode_bank": "054",
+            "nama_bank": "BANK CAPITAL INDONESIA",
+            "id": 34,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/054-E95C5C7B270ED975E39BE0C69B628684.png"
+        },
+        {
+            "kode_bank": "097",
+            "nama_bank": "BANK MAYAPADA",
+            "id": 49,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/097-BE4C675EB930CD36994882ED946108C0.png"
+        },
+        {
+            "kode_bank": "069",
+            "nama_bank": "BANK OF CHINA (HONG KONG)",
+            "id": 42,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/069-DFC24ED247293EB085C9660B0BB16899.png"
+        },
+        {
+            "kode_bank": "535",
+            "nama_bank": "SEABANK INDONESIA",
+            "id": 118,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/535-FF195DF81C85BE77374308B98ADD8A65.png"
+        },
+        {
+            "kode_bank": "484",
+            "nama_bank": "BANK KEB HANA",
+            "id": 101,
+            "isActive": true,
+            "urutan": 999
+        },
+        {
+            "kode_bank": "200",
+            "nama_bank": "BANK BTN",
+            "id": 89,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/200-DF196685BC6B8CA45A9FDBE13EEB31D0.png"
+        },
+        {
+            "kode_bank": "023",
+            "nama_bank": "BANK UOB INDONESIA",
+            "id": 13,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/023-0DB345F805C562DC24AAB08799AC33AB.png"
+        },
+        {
+            "kode_bank": "501",
+            "nama_bank": "BANK DIGITAL BCA",
+            "id": 107,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/501-EF60D1A2BCEAD72E2274491592E09D41.png"
+        },
+        {
+            "kode_bank": "494",
+            "nama_bank": "BANK RAYA INDONESIA",
+            "id": 105,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/494-ADDAF2D5E74A7ABA389C2DD702F5B993.png"
+        },
+        {
+            "kode_bank": "485",
+            "nama_bank": "BANK MNC INTERNASIONAL",
+            "id": 102,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/485-94CCF2BDD2C57DB25BE6308F51870B01.png"
+        },
+        {
+            "kode_bank": "503",
+            "nama_bank": "BANK NATIONALNOBU",
+            "id": 108,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/503-CB550218BBBD5238F536510EB3327C39.png"
+        },
+        {
+            "kode_bank": "441",
+            "nama_bank": "BANK KB BUKOPIN",
+            "id": 96,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/441-B12EE83A54C19F1F5371041206452C4C.png"
+        },
+        {
+            "kode_bank": "212",
+            "nama_bank": "BANK WOORI SAUDARA",
+            "id": 90,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/212-38E6BE076CA8C0A550F0F70FDC5522A6.png"
+        },
+        {
+            "kode_bank": "031",
+            "nama_bank": "CITIBANK",
+            "id": 17,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/031-9233F1C93AE8DC839BFD98B49AEAB01F.png"
+        },
+        {
+            "kode_bank": "513",
+            "nama_bank": "BANK INA PERDANA",
+            "id": 110,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/513-F76F5872174C012A6F570C4E61947151.png"
+        },
+        {
+            "kode_bank": "523",
+            "nama_bank": "BANK SAHABAT SAMPOERNA",
+            "id": 117,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/523-426E6AAA2110F419EAC668D666B3E1E9.png"
+        },
+        {
+            "kode_bank": "531",
+            "nama_bank": "BANK AMAR INDONESIA",
+            "id": 116,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/531-AB42B791D80ED966446E3032D66575B4.png"
+        },
+        {
+            "kode_bank": "167",
+            "nama_bank": "BANK QNB INDONESIA",
+            "id": 88,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/167-3109B5A985E315217FEF6DFA740683DD.png"
+        },
+        {
+            "kode_bank": "459",
+            "nama_bank": "BANK BISNIS INTERNASIONAL",
+            "id": 98,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/459-9F59A05D4C924C47FC31015A4AF4204E.png"
+        },
+        {
+            "kode_bank": "562",
+            "nama_bank": "BANK FAMA INTERNASIONAL",
+            "id": 128,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/562-5CA716E05EC40C3020928B9BD8CBDA3D.png"
+        },
+        {
+            "kode_bank": "161",
+            "nama_bank": "BANK GANESHA",
+            "id": 84,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/161-10CAEBC7F85F6EC719BBE246C4061EF1.png"
+        },
+        {
+            "kode_bank": "164",
+            "nama_bank": "BANK ICBC INDONESIA",
+            "id": 86,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/164-241A23C3852A1FFF0EBEE5C4FF1EA5EE.png"
+        },
+        {
+            "kode_bank": "130",
+            "nama_bank": "BANK NTT",
+            "id": 70,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/130-90D49B2F000A9148D9316F8B713E7214.png"
+        },
+        {
+            "kode_bank": "542",
+            "nama_bank": "BANK JAGO",
+            "id": 120,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/542-BA1C607ABDE350B49680C21A950B6440.png"
+        },
+        {
+            "kode_bank": "153",
+            "nama_bank": "BANK SINARMAS",
+            "id": 81,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/153-567F7B15F2994EAF142DB5965BC8CA75.png"
+        },
+        {
+            "kode_bank": "028",
+            "nama_bank": "BANK OCBC NISP",
+            "id": 15,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/028-CBF2AF40A71F1C886E587A77F980FE88.png"
+        },
+        {
+            "kode_bank": "135",
+            "nama_bank": "BANK SULTRA",
+            "id": 75,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/135-A33AFBEFC56E6CDD38BA5D814AE8668F.png"
+        },
+        {
+            "kode_bank": "050",
+            "nama_bank": "STANDARD CHARTERED BANK",
+            "id": 31,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/050-3F4EDF59313FE5A8E80BBE9A66B67A30.png"
+        },
+        {
+            "kode_bank": "426",
+            "nama_bank": "BANK MEGA",
+            "id": 94,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/426-6812A389265017344471CECB0298A82D.png"
+        },
+        {
+            "kode_bank": "126",
+            "nama_bank": "BANK SULSELBAR",
+            "id": 66,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/126-8BC2D8D480DF9B51791CA7DE759A4668.png"
+        },
+        {
+            "kode_bank": "117",
+            "nama_bank": "BANK SUMUT",
+            "id": 57,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/117-11A17A69CCA5B462671A90E670E13CD3.png"
+        },
+        {
+            "kode_bank": "131",
+            "nama_bank": "BANK MALUKU MALUT",
+            "id": 71,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/131-8E3A368E474A945861312B35923E3EA8.png"
+        },
+        {
+            "kode_bank": "121",
+            "nama_bank": "BANK LAMPUNG",
+            "id": 61,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/121-DC3F65E0F976367093FFBB4AA9620732.png"
+        },
+        {
+            "kode_bank": "127",
+            "nama_bank": "BANK SULUTGO",
+            "id": 67,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/127-CFC33188F83D1E597776038261313E88.png"
+        },
+        {
+            "kode_bank": "548",
+            "nama_bank": "BANK MULTIARTA SENTOSA",
+            "id": 122,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/548-B839882857221FD57DA438FC938D6466.png"
+        },
+        {
+            "kode_bank": "125",
+            "nama_bank": "BPD KALTENG",
+            "id": 65,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/125-CCC86747064907C39B3D43501C74E5D9.png"
+        },
+        {
+            "kode_bank": "119",
+            "nama_bank": "BANK RIAU KEPRI",
+            "id": 59,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/119-0CDC426257567F57FF6F622B13D33C37.png"
+        },
+        {
+            "kode_bank": "526",
+            "nama_bank": "BANK OKE INDONESIA",
+            "id": 115,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/526-A8F2B32C770D04D4F132584371333000.png"
+        },
+        {
+            "kode_bank": "490",
+            "nama_bank": "BANK NEO COMMERCE",
+            "id": 103,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/490-04247D3881E5D8FD60F4EAA0F1C869E3.png"
+        },
+        {
+            "kode_bank": "950",
+            "nama_bank": "BANK COMMONWEALTH",
+            "id": 136,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/950-B4909231CD3EB07FAAB54FCE52C7EF33.png"
+        },
+        {
+            "kode_bank": "567",
+            "nama_bank": "ALLO BANK INDONESIA",
+            "id": 130,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/567-DDF2488681DAD930BA9E0A84F9B54286.png"
+        },
+        {
+            "kode_bank": "553",
+            "nama_bank": "BANK MAYORA",
+            "id": 123,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/553-B95D95CD945E97F8A4B1B4630C994EEB.png"
+        },
+        {
+            "kode_bank": "555",
+            "nama_bank": "BANK INDEX SELINDO",
+            "id": 124,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/555-5B38593142354CCD0461D12443C4BC64.png"
+        },
+        {
+            "kode_bank": "566",
+            "nama_bank": "BANK VICTORIA INTERNATIONAL",
+            "id": 125,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/566-BA9913B7E96D602BAD1E25101204998F.png"
+        },
+        {
+            "kode_bank": "949",
+            "nama_bank": "BANK CTBC INDONESIA",
+            "id": 135,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/949-1C71C70295E35EF9380DE9D90D81B06B.png"
+        },
+        {
+            "kode_bank": "547",
+            "nama_bank": "BANK BTPN SYARIAH",
+            "id": 121,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/547-96038003F025A339BC1E2D27F81C3A94.png"
+        },
+        {
+            "kode_bank": "520",
+            "nama_bank": "PRIMA MASTER BANK",
+            "id": 112,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/520-EF2D11C02AB2F231BD9806878A690E96.png"
+        },
+        {
+            "kode_bank": "498",
+            "nama_bank": "BANK SBI INDONESIA",
+            "id": 106,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/498-35C5AFABC1D8042193B5A25AD3476E11.png"
+        },
+        {
+            "kode_bank": "032",
+            "nama_bank": "JP MORGAN CHASE BANK N.A.",
+            "id": 18,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/032-A4DF73F0A86C89B3A6E1E32CCCB68913.png"
+        },
+        {
+            "kode_bank": "521",
+            "nama_bank": "BANK KB BUKOPIN SYARIAH",
+            "id": 113,
+            "isActive": true,
+            "urutan": 999
+        },
+        {
+            "kode_bank": "045",
+            "nama_bank": "BANK SUMITOMO MITSUI INDONESIA",
+            "id": 27,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/045-2A4B530E017D669C3C8A01A546249171.png"
+        },
+        {
+            "kode_bank": "945",
+            "nama_bank": "BANK IBK INDONESIA",
+            "id": 131,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/945-0926B2078158C5B6B55DE197DDBBFB81.png"
+        },
+        {
+            "kode_bank": "137",
+            "nama_bank": "BANK BANTEN",
+            "id": 606,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/137-426F49E683C9E0828EBCEEB4B39C3537.png"
+        },
+        {
+            "kode_bank": "405",
+            "nama_bank": "BANK VICTORIA SYARIAH",
+            "id": 92,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/405-422ED6AC4AEE4EA33D63872295A3B100.png"
+        },
+        {
+            "kode_bank": "564",
+            "nama_bank": "BANK MANDIRI TASPEN",
+            "id": 129,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/564-AA4AEE72E453DB51A43BF4F1B66AD7CB.png"
+        },
+        {
+            "kode_bank": "146",
+            "nama_bank": "BANK OF INDIA INDONESIA",
+            "id": 77,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/146-5521D73BF7F4E38639E7B4545B1682E3.png"
+        },
+        {
+            "kode_bank": "947",
+            "nama_bank": "BANK ALADIN SYARIAH",
+            "id": 133,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/947-C16E7889ED34DE1ADB806218D57E1967.png"
+        },
+        {
+            "kode_bank": "213",
+            "nama_bank": "BANK BTPN",
+            "id": 91,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/213-A1C771988C8A777D21EF29EED5F4F84C.png"
+        },
+        {
+            "kode_bank": "120",
+            "nama_bank": "BANK SUMSEL BABEL",
+            "id": 60,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/120-742E03CE1E4A15EAA0C9D90CDD883D59.png"
+        },
+        {
+            "kode_bank": "118",
+            "nama_bank": "BANK NAGARI",
+            "id": 58,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/118-EDD378299B36DD53EC9181C115AD7B50.png"
+        },
+        {
+            "kode_bank": "124",
+            "nama_bank": "BANK KALTIMTARA",
+            "id": 64,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/124-6F5AB644856724F473B6D4E1FBEFFFF2.png"
+        },
+        {
+            "kode_bank": "122",
+            "nama_bank": "BPD KALSEL",
+            "id": 62,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/122-4595A0959DE953A0D2931BD504913A1C.png"
+        },
+        {
+            "kode_bank": "115",
+            "nama_bank": "BPD JAMBI",
+            "id": 55,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/115-8FE9144F617E929060EC483524981879.png"
+        },
+        {
+            "kode_bank": "123",
+            "nama_bank": "BANK KALBAR",
+            "id": 63,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/123-0F5A0F4DCA789E7ABB5D1E5C2770D4FD.png"
+        },
+        {
+            "kode_bank": "132",
+            "nama_bank": "BANK PAPUA",
+            "id": 72,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/132-9A83AABDF5454ED66D844263BA28C521.png"
+        },
+        {
+            "kode_bank": "129",
+            "nama_bank": "BPD BALI",
+            "id": 69,
+            "isActive": true,
+            "urutan": 999,
+            "url_image": "https://api-mitra.linkqu.id/app/assets/129-1115B338EFA89DB644DC7672D6B874F3.png"
+        },
+        {
+            "kode_bank": "061",
+            "nama_bank": "BANK ANZ INDONESIA",
+            "id": 39,
+            "isActive": true,
+            "urutan": 999
+        }
+    ],
+    "request": {},
+    "dataadditional": {}
+}
