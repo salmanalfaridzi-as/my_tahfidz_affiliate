@@ -1,5 +1,4 @@
 <?php
-
 include '../../config.php';
 include '../../functions.php';
 
@@ -14,20 +13,16 @@ $message = '';
 $message_type = '';
 
 // ==========================================================
-// 1. AMBIL SALDO & DETAIL BANK DARI affiliate_details
+// 1. AMBIL SALDO & DETAIL BANK
 // ==========================================================
-// Method GET
 $aff_res = supabase_fetch("/affiliate_details?user_id=eq.$user_id&select=wallet_balance,bank_name,bank_account_number,bank_account_holder_name");
 $aff_data = $aff_res['data'][0] ?? [];
-
 $current_balance = $aff_data['wallet_balance'] ?? 0;
-// Data bank yang tersimpan (digunakan sebagai nilai default)
+
 $default_bank_name = $aff_data['bank_name'] ?? '';
 $default_account_number = $aff_data['bank_account_number'] ?? '';
 $default_account_holder = $aff_data['bank_account_holder_name'] ?? '';
 
-
-// Format angka
 function rupiah($angka)
 {
     return "Rp " . number_format($angka, 0, ',', '.');
@@ -41,21 +36,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bank_name = htmlspecialchars($_POST['bank_name'] ?? '');
     $account_number = htmlspecialchars($_POST['bank_account_number'] ?? '');
     $account_holder = htmlspecialchars($_POST['bank_account_holder_name'] ?? '');
-
     $minimum_withdrawal = 10000;
 
     if ($amount < $minimum_withdrawal) {
-        $message = "Jumlah penarikan minimal adalah " . rupiah($minimum_withdrawal) . ".";
-        $message_type = 'danger';
+        $message = "Minimal penarikan adalah " . rupiah($minimum_withdrawal) . ".";
+        $message_type = 'warning';
     } elseif ($amount > $current_balance) {
-        $message = "Saldo Anda (" . rupiah($current_balance) . ") tidak mencukupi untuk penarikan sebesar " . rupiah($amount) . ".";
+        $message = "Saldo tidak mencukupi. Saldo Anda: " . rupiah($current_balance);
         $message_type = 'danger';
     } elseif (empty($bank_name) || empty($account_number) || empty($account_holder)) {
-        $message = "Semua detail rekening bank harus diisi lengkap. Pastikan Anda telah memilih bank dari daftar pencarian.";
+        $message = "Mohon lengkapi semua data bank tujuan.";
         $message_type = 'danger';
     } else {
-
-        // Data untuk dimasukkan ke tabel payouts
         $data = [
             'affiliate_user_id' => $user_id,
             'amount_requested' => $amount,
@@ -65,30 +57,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'status' => 'PENDING',
         ];
 
-        // --- REVISI: Menggunakan supabase_fetch dengan method POST untuk INSERT ---
         $insert_res = supabase_fetch('/payouts', 'POST', $data);
 
-        // Supabase mengembalikan data saat INSERT berhasil, atau array dengan 'error'
         if (isset($insert_res['error'])) {
-            var_dump($insert_res);
-            die();
             $error_msg = $insert_res['error']['message'] ?? 'Unknown Error';
-            $message = "Gagal mengajukan penarikan: " . $error_msg;
+            $message = "Gagal mengajukan: " . $error_msg;
             $message_type = 'danger';
         } else {
-            // Setelah pengajuan berhasil, KURANGI SALDO
+            // Update saldo
             $new_balance = $current_balance - $amount;
             $update_data = ['wallet_balance' => $new_balance];
-
             $update_res = supabase_fetch("/affiliate_details?user_id=eq.$user_id", 'PATCH', $update_data);
 
-            // Cek jika update gagal
             if ($update_res['status'] != 204) {
-                $error_msg = $update_res['data']['message'] ?? 'Unknown Update Error';
-                $message = "Pengajuan berhasil, tetapi GAGAL MENGURANGI SALDO di database: " . $error_msg;
+                $message = "Pengajuan berhasil, namun gagal update saldo lokal. Hubungi Admin.";
                 $message_type = 'warning';
             } else {
-                $message = "Permintaan penarikan sebesar " . rupiah($amount) . " berhasil diajukan dan akan diproses. Saldo Anda saat ini: " . rupiah($new_balance);
+                $message = "<b>Berhasil!</b> Penarikan " . rupiah($amount) . " sedang diproses.";
                 $message_type = 'success';
                 $current_balance = $new_balance;
             }
@@ -96,11 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
 // ==========================================================
 // AMBIL RIWAYAT PENARIKAN
 // ==========================================================
-// Method GET
 $history_res = supabase_fetch("/payouts?affiliate_user_id=eq.$user_id&order=created_at.desc");
 $payout_history = $history_res['data'] ?? [];
 ?>
@@ -109,160 +92,243 @@ $payout_history = $history_res['data'] ?? [];
 <html lang="en">
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-    <title>Withdrawal | My Tahfidz Affiliate</title>
+    <meta charset="utf-8" />
+    <title>Tarik Dana | My Tahfidz Affiliate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" crossorigin="anonymous" />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="../../css/adminlte/adminlte.css" />
+
+    <style>
+        /* Kartu Saldo Gradient */
+        .card-wallet {
+            background: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-wallet::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .wallet-label {
+            opacity: 0.8;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .wallet-amount {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        /* Dropdown Autocomplete */
+        .dropdown-menu {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border: none;
+        }
+
+        .dropdown-item {
+            cursor: pointer;
+            padding: 10px 15px;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #0d6efd;
+        }
+    </style>
 </head>
 
 <body class="layout-fixed sidebar-expand-lg sidebar-open bg-body-tertiary">
     <div class="app-wrapper">
-        <?php
-        $active = 'withdraw';
-        include "../partials/navbar.php";
-        ?>
+        <?php $active = 'withdraw';
+        include "../partials/navbar.php"; ?>
+
         <main class="app-main">
             <div class="app-content-header">
                 <div class="container-fluid">
-                    <h3 class="mb-0">Ajukan Penarikan (Withdrawal)</h3>
+                    <div class="row align-items-center">
+                        <div class="col-sm-6">
+                            <h3 class="mb-0 fw-bold text-dark"><i class="bi bi-cash-coin me-2"></i>Withdrawal</h3>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-end">
+                                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                <li class="breadcrumb-item active">Withdraw</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <div class="app-content">
                 <div class="container-fluid">
 
-                    <?php if ($message): ?>
-                        <div class="alert alert-<?= $message_type ?> alert-dismissible fade show" role="alert">
-                            <?= $message ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    <?php endif; ?>
+                    <?= $message ? "<div class='alert alert-$message_type alert-dismissible fade show shadow-sm mb-4'><i class='bi bi-info-circle-fill me-2'></i>$message <button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>" : '' ?>
 
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5>Saldo Komisi Tersedia</h5>
-                        </div>
-                        <div class="card-body">
-                            <h2 class="text-success">
-                                <strong><?= rupiah($current_balance) ?></strong>
-                            </h2>
-                            <p class="text-muted">Minimal penarikan: <?= rupiah(10000) ?></p>
-                        </div>
-                    </div>
-
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h5>Formulir Pengajuan Penarikan</h5>
-                        </div>
-                        <div class="card-body">
-                            <form method="POST">
-
-                                <div class="mb-3">
-                                    <label for="amount_requested" class="form-label">Jumlah Penarikan (Rupiah)</label>
-                                    <input type="number" class="form-control" id="amount_requested" name="amount_requested" required min="10000"
-                                        placeholder="Minimal Rp 10.000">
-                                    <div class="form-text">Maksimal: <?= rupiah($current_balance) ?></div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="bank_search_input" class="form-label">Nama Bank Tujuan (Cari)</label>
-
-                                    <div class="dropdown">
-                                        <input type="text" class="form-control" id="bank_search_input"
-                                            placeholder="Ketik untuk mencari bank..." required
-                                            autocomplete="off"
-                                            value="<?= htmlspecialchars($default_bank_name) ?>">
-
-                                        <input type="hidden" id="bank_name_hidden" name="bank_name"
-                                            value="<?= htmlspecialchars($default_bank_name) ?>">
-
-                                        <div class="dropdown-menu" id="bank_dropdown_results" style="width: 100%; max-height: 250px; overflow-y: auto;">
-                                        </div>
+                    <div class="row">
+                        <div class="col-lg-4 col-md-12 mb-4 order-lg-last">
+                            <div class="card card-wallet shadow mb-3">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="wallet-label">Saldo Tersedia</div>
+                                        <i class="bi bi-wallet2 fs-4 opacity-50"></i>
+                                    </div>
+                                    <div class="wallet-amount"><?= rupiah($current_balance) ?></div>
+                                    <div class="mt-4 pt-3 border-top border-white border-opacity-25 d-flex justify-content-between align-items-center">
+                                        <small class="opacity-75">Min. Penarikan</small>
+                                        <span class="fw-bold">Rp 10.000</span>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="bank_account_number" class="form-label">Nomor Rekening Tujuan</label>
-                                    <input type="text" class="form-control" id="bank_account_number" name="bank_account_number" required
-                                        placeholder="Cth: 1234567890" value="<?= htmlspecialchars($default_account_number) ?>">
+                            <div class="card card-outline card-warning shadow-sm">
+                                <div class="card-header bg-warning-subtle border-0">
+                                    <h5 class="card-title text-warning-emphasis fw-bold"><i class="bi bi-lightbulb me-2"></i>Catatan Penting</h5>
                                 </div>
-
-                                <div class="mb-3">
-                                    <label for="bank_account_holder_name" class="form-label">Nama Pemilik Rekening</label>
-                                    <input type="text" class="form-control" id="bank_account_holder_name" name="bank_account_holder_name" required
-                                        placeholder="Sesuai nama di buku tabungan" value="<?= htmlspecialchars($default_account_holder) ?>">
+                                <div class="card-body small text-muted">
+                                    <ul class="mb-0 ps-3">
+                                        <li class="mb-2">Pastikan Nama Pemilik Rekening sesuai dengan buku tabungan untuk menghindari penolakan.</li>
+                                        <li class="mb-2">Proses penarikan membutuhkan waktu <b>1-3 hari kerja</b>.</li>
+                                        <li>Biaya admin mungkin berlaku tergantung kebijakan bank.</li>
+                                    </ul>
                                 </div>
-
-                                <button type="submit" class="btn btn-primary"
-                                    <?= $current_balance < 10000 ? 'disabled' : '' ?>>
-                                    Ajukan Penarikan
-                                </button>
-                                <?php if ($current_balance < 10000): ?>
-                                    <small class="text-danger ms-2">Minimal saldo untuk penarikan adalah Rp 10.000.</small>
-                                <?php endif; ?>
-                            </form>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h5>Riwayat Permintaan Penarikan</h5>
-                        </div>
-                        <div class="card-body">
-                            <?php if (empty($payout_history)): ?>
-                                <p class="text-muted">Anda belum memiliki riwayat permintaan penarikan.</p>
-                            <?php else: ?>
-                                <table class="table table-bordered table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>No.</th>
-                                            <th>Jumlah</th>
-                                            <th>Rekening Tujuan</th>
-                                            <th>Status</th>
-                                            <th>Tanggal Ajuan</th>
-                                            <th>Bukti Transfer</th> </tr>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                        $no = 1; // Inisialisasi Nomor Urut
-                                        foreach ($payout_history as $payout):
+                        <div class="col-lg-8 col-md-12">
 
-                                            // Status badge logic
-                                            $status_badge = match ($payout['status']) {
-                                                'PAID' => '<span class="badge text-bg-success">PAID</span>',
-                                                'REJECTED' => '<span class="badge text-bg-danger">REJECTED</span>',
-                                                default => '<span class="badge text-bg-warning">PENDING</span>',
-                                            };
+                            <div class="card card-outline card-primary shadow-sm mb-4">
+                                <div class="card-header">
+                                    <h3 class="card-title fw-bold">Formulir Pengajuan</h3>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Nominal Penarikan</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light fw-bold">Rp</span>
+                                                <input type="number" class="form-control" id="amount_requested" name="amount_requested" required min="10000" placeholder="0">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="setMaxAmount()">Tarik Semua</button>
+                                            </div>
+                                            <div class="form-text text-end">Maksimal: <?= rupiah($current_balance) ?></div>
+                                        </div>
 
-                                            // Logika Timezone (Tetap menggunakan class utc-time untuk konversi JS)
-                                            // Kita tidak perlu memformat tanggal di sini, biarkan JS yang menangani.
-                                        ?>
+                                        <div class="mb-3 position-relative">
+                                            <label class="form-label fw-bold">Nama Bank</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light"><i class="bi bi-bank"></i></span>
+                                                <input type="text" class="form-control" id="bank_search_input"
+                                                    placeholder="Ketik nama bank (Cth: BCA, Mandiri)..."
+                                                    autocomplete="off"
+                                                    value="<?= htmlspecialchars($default_bank_name) ?>">
+                                                <input type="hidden" id="bank_name_hidden" name="bank_name"
+                                                    value="<?= htmlspecialchars($default_bank_name) ?>">
+                                            </div>
+
+                                            <div id="bank_dropdown_results" class="list-group shadow"
+                                                style="display:none; position: absolute; top: 100%; left: 0; width: 100%; z-index: 1050; max-height: 200px; overflow-y: auto;">
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Nomor Rekening</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light"><i class="bi bi-123"></i></span>
+                                                <input type="text" class="form-control" id="bank_account_number" name="bank_account_number" required placeholder="Contoh: 1234567890" value="<?= htmlspecialchars($default_account_number) ?>">
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold">Atas Nama (Pemilik)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                                <input type="text" class="form-control" id="bank_account_holder_name" name="bank_account_holder_name" required placeholder="Nama sesuai buku tabungan" value="<?= htmlspecialchars($default_account_holder) ?>">
+                                            </div>
+                                        </div>
+
+                                        <div class="d-grid">
+                                            <button type="submit" class="btn btn-primary btn-lg fw-bold" <?= $current_balance < 10000 ? 'disabled' : '' ?>>
+                                                <i class="bi bi-send-fill me-2"></i> Ajukan Penarikan Sekarang
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="card card-outline card-secondary shadow-sm">
+                                <div class="card-header border-0">
+                                    <h3 class="card-title fw-bold"><i class="bi bi-clock-history me-2"></i>Riwayat Penarikan</h3>
+                                </div>
+                                <div class="card-body p-0 table-responsive">
+                                    <table class="table table-striped table-hover align-middle mb-0 text-nowrap">
+                                        <thead class="table-light">
                                             <tr>
-                                                <td><?= $no++ ?></td>
-                                                <td><?= rupiah($payout['amount_requested']) ?></td>
-                                                <td><?= htmlspecialchars($payout['bank_name']) . ' - ' . htmlspecialchars($payout['bank_account_number']) ?></td>
-                                                <td><?= $status_badge ?></td>
-                                                <td class="utc-time" data-utc-time="<?= htmlspecialchars($payout['created_at']) ?>">Memuat waktu lokal...</td>
-                                                <td>
-                                            <?php 
-                                            if ($payout['status'] === 'PAID' && !empty($payout['proof_of_transfer_url'])): ?>
-                                                <a href="<?= htmlspecialchars($payout['proof_of_transfer_url']) ?>" 
-                                                   target="_blank" class="btn btn-sm btn-info">
-                                                    Lihat Gambar
-                                                </a>
-                                            <?php else: ?>
-                                                -
-                                            <?php endif; ?>
-                                        </td>
+                                                <th class="text-center">#</th>
+                                                <th>Nominal</th>
+                                                <th>Tujuan Transfer</th>
+                                                <th class="text-center">Status</th>
+                                                <th>Waktu</th>
                                             </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            <?php endif; ?>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (empty($payout_history)): ?>
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-4 text-muted">Belum ada riwayat penarikan.</td>
+                                                </tr>
+                                            <?php else: ?>
+                                                <?php $no = 1;
+                                                foreach ($payout_history as $payout):
+                                                    $status_class = match ($payout['status']) {
+                                                        'PAID' => 'success',
+                                                        'REJECTED' => 'danger',
+                                                        default => 'warning',
+                                                    };
+                                                    $status_label = match ($payout['status']) {
+                                                        'PAID' => 'Selesai',
+                                                        'REJECTED' => 'Ditolak',
+                                                        default => 'Menunggu',
+                                                    };
+                                                ?>
+                                                    <tr>
+                                                        <td class="text-center"><?= $no++ ?></td>
+                                                        <td class="fw-bold text-dark"><?= rupiah($payout['amount_requested']) ?></td>
+                                                        <td>
+                                                            <div class="small fw-bold"><?= htmlspecialchars($payout['bank_name']) ?></div>
+                                                            <div class="small text-muted"><?= htmlspecialchars($payout['bank_account_number']) ?></div>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <span class="badge bg-<?= $status_class ?>-subtle text-<?= $status_class ?> border border-<?= $status_class ?>-subtle rounded-pill">
+                                                                <?= $status_label ?>
+                                                            </span>
+                                                            <?php if ($payout['status'] === 'PAID' && !empty($payout['proof_of_transfer_url'])): ?>
+                                                                <div class="mt-1"><a href="<?= htmlspecialchars($payout['proof_of_transfer_url']) ?>" target="_blank" class="text-decoration-none small"><i class="bi bi-image"></i> Bukti</a></div>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <td class="small text-muted utc-time" data-utc-time="<?= htmlspecialchars($payout['created_at']) ?>">Memuat...</td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -271,172 +337,202 @@ $payout_history = $history_res['data'] ?? [];
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js"></script>
     <script src="../../js/adminlte/adminlte.js"></script>
 
     <script>
+        // --- 1. DATA BANK CADANGAN (FALLBACK) ---
+        // Ini menjamin dropdown tetap jalan meskipun file JSON gagal diload / path salah
+        const FALLBACK_BANKS = [{
+                "kode_bank": "014",
+                "nama_bank": "BCA"
+            },
+            {
+                "kode_bank": "008",
+                "nama_bank": "MANDIRI"
+            },
+            {
+                "kode_bank": "009",
+                "nama_bank": "BNI"
+            },
+            {
+                "kode_bank": "002",
+                "nama_bank": "BRI"
+            },
+            {
+                "kode_bank": "451",
+                "nama_bank": "BSI (SYARIAH INDONESIA)"
+            },
+            {
+                "kode_bank": "022",
+                "nama_bank": "CIMB NIAGA"
+            },
+            {
+                "kode_bank": "147",
+                "nama_bank": "MUAMALAT"
+            },
+            {
+                "kode_bank": "013",
+                "nama_bank": "PERMATA"
+            },
+            {
+                "kode_bank": "011",
+                "nama_bank": "DANAMON"
+            },
+            {
+                "kode_bank": "213",
+                "nama_bank": "BTPN (JENIUS)"
+            },
+            {
+                "kode_bank": "050",
+                "nama_bank": "KEB HANA"
+            },
+            {
+                "kode_bank": "503",
+                "nama_bank": "NOBU"
+            },
+            {
+                "kode_bank": "501",
+                "nama_bank": "JAGO"
+            },
+            {
+                "kode_bank": "490",
+                "nama_bank": "NEO COMMERCE"
+            },
+            {
+                "kode_bank": "535",
+                "nama_bank": "SEABANK"
+            }
+        ];
+
+        const BANK_JSON_URL = '../../assets/jsons/bank_list.json'; // Pastikan path ini benar
+        let allBanks = [];
+
+        $(document).ready(function() {
+            loadBankData();
+            initializeAutocomplete();
+            handleFormValidation();
+            setMaxAmount(); // Inisialisasi tombol tarik semua
+            convertUTCToLocalTime();
+        });
+
+        // --- 2. FUNGSI LOAD DATA (Prioritas JSON -> Fallback Manual) ---
+        function loadBankData() {
+            fetch(BANK_JSON_URL)
+                .then(response => {
+                    if (!response.ok) throw new Error('File JSON tidak ditemukan');
+                    return response.json();
+                })
+                .then(data => {
+                    // Normalisasi Data (Handle berbagai struktur JSON)
+                    if (Array.isArray(data)) allBanks = data;
+                    else if (data.banks) allBanks = data.banks;
+                    else if (data.data) allBanks = data.data;
+                    else allBanks = FALLBACK_BANKS; // Pakai cadangan jika format aneh
+
+                    console.log("Bank Data Loaded via JSON:", allBanks.length);
+                })
+                .catch(error => {
+                    console.warn('Gagal load JSON, menggunakan data fallback manual.', error);
+                    allBanks = FALLBACK_BANKS; // GUNAKAN DATA MANUAL
+                });
+        }
+
+        // --- 3. LOGIC AUTOCOMPLETE ---
+        function initializeAutocomplete() {
+            const $input = $('#bank_search_input');
+            const $results = $('#bank_dropdown_results');
+            const $hiddenInput = $('#bank_name_hidden');
+
+            // Saat mengetik
+            $input.on('input focus', function() {
+                const query = $(this).val().toLowerCase().trim();
+                $results.empty();
+                $hiddenInput.val(''); // Reset hidden value saat user mengetik ulang
+
+                if (query.length === 0) {
+                    $results.hide();
+                    return;
+                }
+
+                // Filter Data
+                const filtered = allBanks.filter(b => b.nama_bank.toLowerCase().includes(query)).slice(0, 10);
+
+                if (filtered.length > 0) {
+                    filtered.forEach(bank => {
+                        const html = `
+                        <a href="#" class="list-group-item list-group-item-action py-2" data-name="${bank.nama_bank}">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <span class="fw-bold">${bank.nama_bank}</span>
+                                
+                            </div>
+                        </a>
+                    `;
+                        $results.append(html);
+                    });
+                    $results.show();
+                } else {
+                    $results.html('<div class="list-group-item text-muted small">Bank tidak ditemukan.</div>').show();
+                }
+            });
+
+            // Saat Item Dipilih
+            $results.on('click', 'a', function(e) {
+                e.preventDefault();
+                const selectedName = $(this).data('name');
+                $input.val(selectedName);
+                $hiddenInput.val(selectedName);
+                $results.hide();
+            });
+
+            // Sembunyikan jika klik di luar
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.position-relative').length) {
+                    $results.hide();
+                }
+            });
+        }
+
+        // --- 4. VALIDASI FORM SEBELUM SUBMIT ---
+        function handleFormValidation() {
+            $('form').on('submit', function(e) {
+                const bankName = $('#bank_name_hidden').val();
+                // Jika user mengetik manual tapi tidak klik dropdown, kita coba ambil value input teksnya
+                if (!bankName) {
+                    const manualInput = $('#bank_search_input').val().trim();
+                    if (manualInput.length > 2) {
+                        $('#bank_name_hidden').val(manualInput); // Izinkan input manual
+                    } else {
+                        alert("Mohon pilih atau isi nama bank dengan benar.");
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        // --- 5. FITUR LAINNYA ---
+        function setMaxAmount() {
+            window.setMaxAmount = function() {
+                const maxVal = <?= $current_balance ?>;
+                document.getElementById('amount_requested').value = maxVal;
+            }
+        }
+
         function convertUTCToLocalTime() {
-            // Opsi format tanggal dan waktu lokal yang ramah pengguna
             const options = {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
-                second: '2-digit',
                 hour12: false
             };
-
-            // Loop melalui semua elemen yang berisi waktu UTC
-            document.querySelectorAll('.utc-time').forEach(element => {
-                const utcTimeStr = element.getAttribute('data-utc-time');
-
-                if (utcTimeStr) {
-                    // Buat objek Date. Browser secara otomatis akan mengasumsikan ini UTC
-                    // jika formatnya ISO 8601 (seperti dari Supabase) dan mengonversinya saat di-output.
-                    const localDate = new Date(utcTimeStr);
-
-                    // Gunakan toLocaleString() untuk format waktu lokal browser
-                    // Anda bisa menyesuaikan 'en-GB' dengan locale yang diinginkan (misal: 'id-ID')
-                    const formattedTime = localDate.toLocaleString('id-ID', options);
-
-                    // Dapatkan nama timezone, cth: "WIB", "PST", dll.
-                    const timeZoneName = Intl.DateTimeFormat('id-ID', {
-                        timeZoneName: 'short'
-                    }).format(localDate).split(' ').pop();
-
-                    element.textContent = `${formattedTime} ${timeZoneName}`;
+            document.querySelectorAll('.utc-time').forEach(el => {
+                const utcStr = el.getAttribute('data-utc-time');
+                if (utcStr) {
+                    el.textContent = new Date(utcStr).toLocaleString('id-ID', options);
                 }
-            });
-        }
-
-        $(document).ready(function() {
-            loadBankData();
-            initializeAutocomplete();
-            handleSubmitForm();
-
-            // Panggil fungsi konversi waktu setelah dokumen siap
-            convertUTCToLocalTime();
-        });
-        // URL file JSON bank Anda
-        const BANK_JSON_URL = '../../assets/jsons/bank_list.json';
-        const defaultBankName = '<?= htmlspecialchars($default_bank_name) ?>';
-        let allBanks = [];
-
-        $(document).ready(function() {
-            loadBankData();
-            initializeAutocomplete();
-            handleSubmitForm();
-        });
-
-        // 1. Mengambil data JSON Bank
-        function loadBankData() {
-            fetch(BANK_JSON_URL)
-                .then(response => {
-                    if (!response.ok) throw new Error('Gagal memuat file JSON bank');
-                    return response.json();
-                })
-                .then(data => {
-                    let bankArray = [];
-
-                    if (Array.isArray(data)) {
-                        bankArray = data;
-                    } else if (typeof data === 'object' && data !== null) {
-                        bankArray = data.banks || data.data || data.result || [];
-                    }
-
-                    if (!Array.isArray(bankArray)) {
-                        console.error("Struktur JSON tidak valid.");
-                        bankArray = [];
-                    }
-                    allBanks = bankArray;
-                })
-                .catch(error => {
-                    console.error('Fetch Error:', error);
-                });
-        }
-
-        // 2. Logika Autocomplete
-        function initializeAutocomplete() {
-            const $input = $('#bank_search_input');
-            const $results = $('#bank_dropdown_results');
-            const $hiddenInput = $('#bank_name_hidden');
-
-            // Fungsi untuk menampilkan hasil pencarian
-            const showResults = (query) => {
-                $results.empty().removeClass('show');
-                const normalizedQuery = query.toLowerCase().trim();
-
-                if (normalizedQuery.length === 0) return;
-
-                const filteredBanks = allBanks.filter(bank =>
-                    bank.nama_bank.toLowerCase().includes(normalizedQuery)
-                ).slice(0, 10); // Batasi hingga 10 hasil
-
-                if (filteredBanks.length === 0) {
-                    $results.append('<a class="dropdown-item disabled">Tidak ada bank yang cocok.</a>');
-                } else {
-                    filteredBanks.forEach(bank => {
-                        const $item = $('<a class="dropdown-item">').text(bank.nama_bank);
-                        $item.data('bank-name', bank.nama_bank);
-                        $results.append($item);
-                    });
-                }
-
-                $results.addClass('show'); // Tampilkan dropdown
-
-                // Atur posisi dropdown
-                $results.css({
-                    'position': 'absolute',
-                    'z-index': 1000,
-                    'top': $input.outerHeight()
-                });
-            };
-
-            // Event saat pengguna mengetik
-            $input.on('input', function() {
-                const query = $(this).val();
-                $hiddenInput.val('');
-                showResults(query);
-            });
-
-            // Event saat item di dropdown diklik
-            $results.on('click', '.dropdown-item', function() {
-                if ($(this).hasClass('disabled')) return;
-
-                const bankName = $(this).data('bank-name');
-
-                $input.val(bankName);
-                $hiddenInput.val(bankName);
-                $results.removeClass('show');
-            });
-
-            // Event untuk menyembunyikan dropdown saat klik di luar
-            $(document).on('click', function(e) {
-                if (!$(e.target).closest('.dropdown').length) {
-                    $results.removeClass('show');
-                }
-            });
-        }
-
-        // 3. Handle Submit Form (Memastikan bank sudah dipilih dari daftar)
-        function handleSubmitForm() {
-            const $form = $('form');
-            const $input = $('#bank_search_input');
-            const $hiddenInput = $('#bank_name_hidden');
-
-            $form.on('submit', function(e) {
-                const bankNameSent = $hiddenInput.val().trim();
-
-                if (!bankNameSent) {
-                    alert("Mohon pilih bank tujuan dari daftar pencarian yang muncul.");
-                    $input.focus();
-                    e.preventDefault();
-                    return;
-                }
-
-                // Hidden input sudah memiliki name="bank_name" dan akan dikirim ke PHP.
             });
         }
     </script>

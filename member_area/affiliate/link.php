@@ -1,6 +1,4 @@
 <?php
-// member_area/user_affiliate/generate_link.php
-
 include '../../config.php';
 include '../../functions.php';
 
@@ -16,188 +14,279 @@ $aff_res = supabase_fetch("/affiliate_details?user_id=eq.$user_id&select=referra
 $aff_data = $aff_res['data'][0] ?? ['referral_code' => 'N/A'];
 $referral_code = $aff_data['referral_code'];
 
-// Jika referral_code tidak ditemukan, hentikan proses (user belum terdaftar afiliasi)
 if ($referral_code === 'N/A') {
     die("<div class='alert alert-danger'>Akun Anda belum memiliki Kode Referral. Hubungi Admin.</div>");
 }
 
-// --- 2. Ambil Daftar Produk (Untuk Generasi Link Spesifik) ---
-// Kita asumsikan BASE_URL adalah alamat landing page Anda (misal: https://iqro.com/index.php)
-// Anda harus mendefinisikan konstanta BASE_URL di config.php
-
-$products_res = supabase_fetch("/products?select=id,name,commission_rate_price,path");
+// --- 2. Ambil Daftar Produk ---
+$products_res = supabase_fetch("/products?is_affiliate_visible=eq.true&select=id,name,commission_rate_price,path");
 $products = $products_res['data'] ?? [];
+
+// --- 3. Ambil Daftar Kursus LMS ---
+$courses_res = supabase_fetch("/lms_courses?is_published=eq.true&select=id,title,description,thumbnail_url,content");
+$courses = $courses_res['data'] ?? [];
 
 $message = '';
 if ($products_res['status'] != 200 || empty($products)) {
-    $message = "<div class='alert alert-warning'>Gagal memuat daftar produk. Silakan coba refresh.</div>";
+    $message .= "<div class='alert alert-warning alert-dismissible fade show'>Gagal memuat daftar produk atau produk kosong. <button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
 }
-?>
+if ($courses_res['status'] != 200) {
+    $message .= "<div class='alert alert-danger'>Gagal memuat daftar kursus LMS.</div>";
+}
 
+$active = 'affiliate_link';
+?>
 <!doctype html>
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Link Referral | Iqro Affiliate</title>
+    <title>Link Referral & LMS | Iqro Affiliate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css" crossorigin="anonymous" media="print" onload="this.media='all'" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" crossorigin="anonymous" />
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="../../css/adminlte/adminlte.css" />
+
     <style>
-        .card-link-generator {
-            border-left: 5px solid #28a745; /* Green Accent */
-            background-color: #f8f9fa;
-        }
+        /* Custom Styles for Affiliate Page */
         .instruction-box {
-            padding: 15px;
-            background-color: #fff3cd; /* Warna Kuning Lembut */
+            background: linear-gradient(to right, #fff3cd, #fff);
             border-left: 5px solid #ffc107;
-            margin-bottom: 20px;
+            border-radius: 8px;
+            padding: 20px;
         }
-        .referral-link-display {
-            font-size: 1rem;
+
+        /* Product Link Cards */
+        .card-link-generator {
+            border: none;
+            transition: transform 0.2s;
+        }
+        .card-link-generator:hover {
+            transform: translateY(-5px);
+        }
+        .referral-input-group {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 8px;
+            font-family: monospace;
+            color: #d63384;
             word-break: break-all;
-            background-color: #e9ecef;
-            padding: 10px;
-            border-radius: 5px;
         }
-        .btn-copy {
+
+        /* LMS Course Cards */
+        .course-card {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: #fff;
+            height: 100%; /* Agar tinggi card sama */
+        }
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+        .course-thumb-wrapper {
+            position: relative;
+            height: 180px; /* Tinggi gambar fix */
+            overflow: hidden;
+        }
+        .course-thumbnail {
             width: 100%;
-            font-size: 1.1rem;
-            padding: 10px;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .course-card:hover .course-thumbnail {
+            transform: scale(1.05);
+        }
+        .course-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            backdrop-filter: blur(4px);
         }
     </style>
 </head>
 
 <body class="layout-fixed sidebar-expand-lg sidebar-open bg-body-tertiary">
     <div class="app-wrapper">
-        <?php
-        $active = 'affiliate_link'; // Asumsi menu navigasi Anda
-        include "../partials/navbar.php";
-        ?>
+        <?php include "../partials/navbar.php"; ?>
+
         <main class="app-main">
             <div class="app-content-header">
                 <div class="container-fluid">
-                    <div class="row">
+                    <div class="row align-items-center">
                         <div class="col-sm-6">
-                            <h3 class="mb-0">🔑 Generate Link Referral</h3>
+                            <h3 class="mb-0 text-dark fw-bold"><i class="bi bi-link-45deg me-2"></i>Affiliate Tools</h3>
                         </div>
                         <div class="col-sm-6 text-end">
-                    <p class="mb-0 text-muted">Kode Referral Anda: <strong class="text-primary"><?= htmlspecialchars($referral_code) ?></strong></p>
-
+                            <span class="badge bg-primary fs-6 p-2 rounded-pill shadow-sm">
+                                Referral Code: <?= htmlspecialchars($referral_code) ?>
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="app-content">
                 <div class="container-fluid">
-                    <?php echo $message; ?>
+                    <?= $message; ?>
 
-                    <div class="row">
-                        <div class="col-lg-12">
+                    <div class="row mb-4">
+                        <div class="col-12">
                             <div class="instruction-box shadow-sm">
-                                <h4>Panduan Sederhana:</h4>
-                                <ol class="mb-0">
-                                    <li>Pilih <b>Paket Aplikasi</b> di bawah.</li>
-                                    <li>Klik tombol <b>"Copy Link Referral"</b>.</li>
-                                    <li>Bagikan <b>link</b> tersebut ke grup WA, Facebook, atau teman Anda.</li>
-                                    <li>Setiap orang yang membeli melalui <b>link</b> Anda akan tercatat sebagai komisi!</li>
+                                <h5 class="fw-bold text-warning-emphasis"><i class="bi bi-lightbulb me-2"></i>Cara Kerja Affiliate</h5>
+                                <ol class="mb-0 ps-3">
+                                    <li>Pilih produk yang ingin Anda promosikan di bawah ini.</li>
+                                    <li>Klik tombol <b>"Salin Link"</b>.</li>
+                                    <li>Bagikan link ke media sosial atau teman. Komisi otomatis masuk saat ada pembelian.</li>
                                 </ol>
                             </div>
                         </div>
                     </div>
-                    
+
+                    <div class="d-flex align-items-center mb-3">
+                        <h4 class="fw-bold text-secondary mb-0">📦 Produk Tersedia</h4>
+                        <hr class="flex-grow-1 ms-3">
+                    </div>
+
                     <div class="row">
                         <?php if (empty($products)): ?>
-                            <div class="col-12"><div class="alert alert-info">Tidak ada produk yang terdaftar untuk dibuat link referral.</div></div>
+                            <div class="col-12 text-center py-5 text-muted">Belum ada produk aktif.</div>
                         <?php else: ?>
-                            <?php foreach ($products as $product): ?>
-                                <?php
+                            <?php foreach ($products as $product): 
                                 $product_id = htmlspecialchars($product['id']);
-                                $product_name = htmlspecialchars($product['name']);
-                                
-                                // FORMAT LINK REFERRAL: [BASE_URL]?ref=[REFERRAL_CODE]
-                                $referral_link = BASE_URL . $product['path'] . "ref=" . urlencode($referral_code); 
-                                // Jika Anda ingin link spesifik produk: $referral_link = BASE_URL . "?product_id=" . $product_id . "&ref=" . urlencode($referral_code);
-                                // Namun, kita gunakan BASE_URL saja (yang sudah kita buat)
-                                ?>
-
-                                <div class="col-md-6 mb-4">
-                                    <div class="card card-link-generator shadow">
-                                        <div class="card-header bg-success text-white">
-                                            <h4 class="card-title mb-0"><i class="bi bi-book-half me-2"></i> <?php echo $product_name; ?></h4>
+                                $referral_link = BASE_URL . $product['path'] . "?ref=" . urlencode($referral_code);
+                            ?>
+                            <div class="col-md-6 col-lg-6 mb-4">
+                                <div class="card card-link-generator card-outline card-success shadow-sm h-100">
+                                    <div class="card-header bg-transparent border-bottom-0 pt-3">
+                                        <h5 class="card-title fw-bold text-success">
+                                            <i class="bi bi-bag-check-fill me-2"></i><?= htmlspecialchars($product['name']); ?>
+                                        </h5>
+                                    </div>
+                                    <div class="card-body pt-0">
+                                        <p class="text-muted small mb-2">Link Referral Unik Anda:</p>
+                                        <div class="referral-input-group mb-3 text-truncate" id="link-<?= $product_id; ?>">
+                                            <?= $referral_link; ?>
                                         </div>
-                                        <div class="card-body">
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Link Spesial Anda:</label>
-                                                <div class="referral-link-display" id="link-<?php echo $product_id; ?>">
-                                                    <?php echo $referral_link; ?>
-                                                </div>
-                                            </div>
-                                            
-                                            <button 
-                                                class="btn btn-primary btn-copy btn-lg" 
-                                                data-link="<?php echo $referral_link; ?>"
-                                                onclick="copyLink('<?php echo $product_id; ?>', this)">
-                                                <i class="bi bi-link-45deg me-2"></i> Copy Link Referral
-                                            </button>
-                                            <span id="feedback-<?php echo $product_id; ?>" class="text-success mt-2 d-block" style="display:none;"></span>
-                                        </div>
+                                        <button class="btn btn-success w-100 fw-bold" 
+                                                onclick="copyLink('<?= $product_id; ?>', this)">
+                                            <i class="bi bi-clipboard me-2"></i> Salin Link
+                                        </button>
+                                        <small id="feedback-<?= $product_id; ?>" class="d-block text-center mt-2 fw-bold text-success" style="display:none!important;"></small>
                                     </div>
                                 </div>
+                            </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
-                    
+
+                    <div class="d-flex align-items-center mt-2 mb-3">
+                        <h4 class="fw-bold text-secondary mb-0">🎓 Materi Pelatihan (LMS)</h4>
+                        <hr class="flex-grow-1 ms-3">
+                    </div>
+
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        <?php if (empty($courses)): ?>
+                            <div class="col-12">
+                                <div class="alert alert-light border text-center">Belum ada materi pelatihan.</div>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($courses as $course): 
+                                $c_id = htmlspecialchars($course['id']);
+                                $c_title = htmlspecialchars($course['title']);
+                                $c_desc = htmlspecialchars($course['description']);
+                                $c_thumb = !empty($course['thumbnail_url']) ? htmlspecialchars($course['thumbnail_url']) : 'https://placehold.co/600x400?text=Course+Image';
+                                $c_content = isset($course['content']) ? html_entity_decode($course['content']) : '<p>Tidak ada konten teks.</p>';
+                                $modalId = "modalCourse" . $c_id;
+                            ?>
+                            <div class="col">
+                                <div class="card course-card shadow-sm h-100">
+                                    <div class="course-thumb-wrapper">
+                                        <img src="<?= $c_thumb ?>" class="course-thumbnail" alt="<?= $c_title ?>">
+                                        <div class="course-badge"><i class="bi bi-play-circle me-1"></i> Materi</div>
+                                    </div>
+                                    
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title fw-bold text-dark mb-2"><?= $c_title ?></h5>
+                                        <p class="card-text text-muted small flex-grow-1">
+                                            <?= substr($c_desc, 0, 90) . (strlen($c_desc) > 90 ? '...' : '') ?>
+                                        </p>
+                                        
+                                        <button type="button" class="btn btn-outline-warning w-100 mt-3 rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#<?= $modalId ?>">
+                                            <i class="bi bi-eye me-2"></i> Pelajari Sekarang
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade" id="<?= $modalId ?>" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-warning-subtle">
+                                            <h5 class="modal-title fw-bold"><i class="bi bi-book me-2"></i> <?= $c_title ?></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4">
+                                            <img src="<?= $c_thumb ?>" class="img-fluid rounded mb-4 w-100 shadow-sm" style="max-height: 300px; object-fit: cover;">
+                                            
+                                            <h6 class="fw-bold border-bottom pb-2 mb-3">Deskripsi & Materi:</h6>
+                                            <div class="course-content-text">
+                                                <?= $c_content ?>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div> <br><br>
                 </div>
             </div>
         </main>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js"></script>
     <script src="../../js/adminlte/adminlte.js"></script>
 
     <script>
-        /**
-         * Fungsi untuk menyalin link ke clipboard dan memberikan feedback.
-         * @param {string} productId - ID produk untuk menargetkan elemen feedback.
-         * @param {HTMLElement} button - Elemen tombol yang diklik.
-         */
         function copyLink(productId, button) {
-            const link = document.getElementById(`link-${productId}`).textContent.trim();
-            const feedbackElement = document.getElementById(`feedback-${productId}`);
-            
-            // 1. Salin ke clipboard
-            navigator.clipboard.writeText(link).then(() => {
-                // 2. Tampilkan feedback sukses
-                feedbackElement.textContent = 'Link berhasil disalin!';
-                feedbackElement.style.display = 'block';
-                button.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Berhasil Disalin!';
-                button.classList.remove('btn-primary');
-                button.classList.add('btn-success');
+            const linkText = document.getElementById(`link-${productId}`).innerText.trim();
+            const feedback = document.getElementById(`feedback-${productId}`);
+            const originalHtml = button.innerHTML;
 
-                // 3. Reset tampilan setelah 3 detik
+            navigator.clipboard.writeText(linkText).then(() => {
+                button.classList.remove('btn-success');
+                button.classList.add('btn-dark'); // Visual feedback button change
+                button.innerHTML = '<i class="bi bi-check2-all"></i> Tersalin!';
+                
+                feedback.textContent = 'Link berhasil disalin ke clipboard!';
+                feedback.style.display = 'block';
+
                 setTimeout(() => {
-                    feedbackElement.style.display = 'none';
-                    button.innerHTML = '<i class="bi bi-link-45deg me-2"></i> Copy Link Referral';
-                    button.classList.remove('btn-success');
-                    button.classList.add('btn-primary');
-                }, 3000);
-
+                    button.classList.remove('btn-dark');
+                    button.classList.add('btn-success');
+                    button.innerHTML = originalHtml;
+                    feedback.style.display = 'none';
+                }, 2500);
             }).catch(err => {
-                // Tampilkan error jika gagal
-                feedbackElement.textContent = 'Gagal menyalin link. Mohon salin manual.';
-                feedbackElement.classList.remove('text-success');
-                feedbackElement.classList.add('text-danger');
-                feedbackElement.style.display = 'block';
-                console.error('Copy failed', err);
+                alert("Gagal menyalin otomatis. Silakan blok dan copy manual.");
             });
         }
     </script>
 </body>
-
-</html>
+</html> 
