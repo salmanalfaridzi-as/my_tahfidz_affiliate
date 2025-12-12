@@ -1,197 +1,181 @@
-<?php
+<?php 
 // pages/login.php
-include '../../config.php';
-include '../../functions.php';
+include '../../config.php'; 
+include '../../functions.php'; 
 
 // Cek jika pengguna sudah login, alihkan ke dashboard
-if (isset($_SESSION['access_token'])) {
-  header('Location: ../index.html');
-  exit;
-}
+if (isset($_SESSION['access_token'])) { 
+    header('Location: ../home/index.php'); // Pastikan path redirect benar
+    exit; 
+} 
 
-$message = '';
-$email_input = ''; // Untuk menjaga input email tetap ada setelah error
+$message = ''; 
+$email_input = ''; 
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // Sanitasi dan Validasi Input
-  $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
-  $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
-  $email_input = $email;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
+    $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL); 
+    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS); 
+    $email_input = $email; 
 
-  if ($email && $password) {
-    $auth_data = [
-      'email' => $email,
-      'password' => $password
-    ];
+    if ($email && $password) { 
+        $auth_data = [ 'email' => $email, 'password' => $password ]; 
+        
+        // 1. Login ke Supabase Auth
+        $response = supabase_auth_request('/token?grant_type=password', $auth_data); 
 
-    // Panggil Supabase Auth Endpoint untuk mendapatkan token
-    $response = supabase_auth_request('/token?grant_type=password', $auth_data);
-    // var_dump($response);
-    // echo $response['data']['access_token'];
-    // echo $response['data']['user']['id'];
-    //             echo $response['data']['user']['email'];
-    // die();
-    if ($response['status'] == 200) {
-      // --- LOGIN BERHASIL ---
+        if ($response['status'] == 200) { 
+            // Ambil data sementara
+            $access_token = $response['data']['access_token'];
+            $user_id = $response['data']['user']['id'];
 
-      // Simpan token dan user info di sesi. Token ini wajib untuk mengakses DB (PostgREST)
-      $_SESSION['access_token'] = $response['data']['access_token'];
-      $_SESSION['refresh_token'] = $response['data']['refresh_token'];
-      $_SESSION['user_id'] = $response['data']['user']['id'];
-      $_SESSION['user_email'] = $response['data']['user']['email'];
+            // 2. CEK ROLE DI TABLE USER_PROFILE 
+            // Kita harus melakukan request manual ke database menggunakan token yang baru didapat
+            $url = SUPABASE_URL . "/rest/v1/user_profile?user_id=eq." . $user_id . "&select=role";
+            
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'apikey: ' . SUPABASE_KEY,
+                'Authorization: Bearer ' . $access_token, // Gunakan token user yg baru login
+                'Content-Type: application/json'
+            ]);
+            
+            $profile_response = curl_exec($ch);
+            $profile_data = json_decode($profile_response, true);
+            curl_close($ch);
 
-      // Alihkan ke Dashboard Afiliasi
-      header('Location: ../index.html');
-      exit;
-    } else {
-      // --- LOGIN GAGAL ---
+            // Cek apakah data profile ada dan role-nya 'affiliator'
+            if (!empty($profile_data) && isset($profile_data[0]['role']) && $profile_data[0]['role'] === 'affiliator') {
+                
+                // --- LOGIN SUKSES & ROLE VALID ---
+                $_SESSION['access_token'] = $access_token; 
+                $_SESSION['refresh_token'] = $response['data']['refresh_token']; 
+                $_SESSION['user_id'] = $user_id; 
+                $_SESSION['user_email'] = $response['data']['user']['email']; 
 
-      // Supabase mengembalikan error_description jika gagal
-      $error_msg = $response['data']['error_description'] ?? 'Email atau password salah. Coba lagi.';
-      $message = "Login Gagal: " . htmlspecialchars($error_msg);
-    }
-  } else {
-    $message = "Mohon masukkan email dan password yang valid";
-  }
-}
-?>
+                // Redirect ke Dashboard
+                header('Location: ../home/index.php'); // Sesuaikan path dashboard Anda
+                exit;
+
+            } else {
+                // --- LOGIN GAGAL: ROLE TIDAK COCOK ---
+                $message = "Akses Ditolak: Akun Anda tidak terdaftar sebagai Affiliator.";
+            }
+
+        } else { 
+            // --- LOGIN GAGAL: AUTH ERROR ---
+            $error_msg = $response['data']['error_description'] ?? 'Email atau password salah.'; 
+            $message = "Login Gagal: " . htmlspecialchars($error_msg); 
+        } 
+    } else { 
+        $message = "Mohon masukkan email dan password yang valid."; 
+    } 
+} 
+?> 
 <!doctype html>
 <html lang="en">
-<!--begin::Head-->
-
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Login | My Tahfidz Affiliate</title>
-  <!--begin::Accessibility Meta Tags-->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
-  <!--end::Accessibility Meta Tags-->
-  <!--begin::Primary Meta Tags-->
-  <meta name="title" content="Login | My Tahfidz Affiliate" />
-  <!-- <meta name="author" content="ColorlibHQ" />
-    <meta
-      name="description"
-      content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS. Fully accessible with WCAG 2.1 AA compliance."
-    />
-    <meta
-      name="keywords"
-      content="bootstrap 5, bootstrap, bootstrap 5 admin dashboard, bootstrap 5 dashboard, bootstrap 5 charts, bootstrap 5 calendar, bootstrap 5 datepicker, bootstrap 5 tables, bootstrap 5 datatable, vanilla js datatable, colorlibhq, colorlibhq dashboard, colorlibhq admin dashboard, accessible admin panel, WCAG compliant"
-    /> -->
-  <!--end::Primary Meta Tags-->
-  <!--begin::Accessibility Features-->
-  <!-- Skip links will be dynamically added by accessibility.js -->
-  <meta name="supported-color-schemes" content="light dark" />
-  <link rel="preload" href="../../css/adminlte/adminlte.css" as="style" />
-  <!--end::Accessibility Features-->
-  <!--begin::Fonts-->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
-    integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q="
-    crossorigin="anonymous"
-    media="print"
-    onload="this.media='all'" />
-  <!--end::Fonts-->
-  <!--begin::Third Party Plugin(OverlayScrollbars)-->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css"
-    crossorigin="anonymous" />
-  <!--end::Third Party Plugin(OverlayScrollbars)-->
-  <!--begin::Third Party Plugin(Bootstrap Icons)-->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-    crossorigin="anonymous" />
-  <!--end::Third Party Plugin(Bootstrap Icons)-->
-  <!--begin::Required Plugin(AdminLTE)-->
-  <link rel="stylesheet" href="../../css/adminlte/adminlte.css" />
-  <!--end::Required Plugin(AdminLTE)-->
+    <meta charset="utf-8" />
+    <title>Login | My Tahfidz Affiliate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="../../css/adminlte/adminlte.css" />
+    
+    <style>
+        /* Custom Style untuk mempercantik halaman login */
+        body.login-page {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-box {
+            width: 400px;
+        }
+        @media (max-width: 576px) {
+            .login-box {
+                width: 90%;
+            }
+        }
+    </style>
 </head>
-<!--end::Head-->
-<!--begin::Body-->
 
-<body class="login-page bg-body-secondary">
-  <div class="login-box">
-    <div class="login-logo">
-      <b>My Tahfidz</b> Affiliate
-    </div>
-    <!-- /.login-logo -->
-    <div class="card">
-      <div class="card-body login-card-body">
-        <p class="login-box-msg">Sign in to start your session</p>
-        <?php if ($message): ?>
-          <div class="alert alert-danger"><?php echo htmlspecialchars($message); ?></div>
-        <?php endif; ?>
-        <form method="post">
-          <div class="input-group mb-3">
-            <input type="email" class="form-control" id="email" name="email" placeholder="Email" value="<?php echo htmlspecialchars($email_input); ?>" />
-            <div class="input-group-text"><span class="bi bi-envelope"></span></div>
-          </div>
-          <div class="input-group mb-3">
-            <input type="password" class="form-control" id="password" name="password" placeholder="Password" />
-            <div class="input-group-text"><span class="bi bi-lock-fill"></span></div>
-          </div>
+<body class="login-page">
 
+    <div class="login-box">
+        <div class="login-logo mb-4 text-center">
+            <a href="#" class="fw-bold text-dark text-decoration-none">
+                <img src="../../assets/images/logo-mytahfidz.png" alt="Logo" style="height: 50px; margin-bottom: 10px;">
+                <br>
+                My Tahfidz <b>Affiliate</b>
+            </a>
+        </div>
 
-          <div class="d-flex justify-content-center align-items-center">
-
-            <div class="col-4 w-100">
-              <div class="d-grid gap-2 ">
-                <button type="submit" class="btn btn-primary ">Sign In</button>
-              </div>
+        <div class="card card-outline card-primary shadow-lg">
+            <div class="card-header text-center">
+                <h3 class="card-title mb-0 fw-bold">Sign In</h3>
             </div>
-          </div>
-        </form>
-        <p class="mb-1 text-center mt-3"><a href="forgot-password.html">I forgot my password</a></p>
-        <p class="mb-0 text-center">
-          <a href="register.php" class="text-center"> Register a new account </a>
-        </p>
-      </div>
-      <!-- /.login-card-body -->
-    </div>
-  </div>
-  <!-- /.login-box -->
-  <!--begin::Third Party Plugin(OverlayScrollbars)-->
-  <script
-    src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
-    crossorigin="anonymous"></script>
-  <!--end::Third Party Plugin(OverlayScrollbars)--><!--begin::Required Plugin(popperjs for Bootstrap 5)-->
-  <script
-    src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-    crossorigin="anonymous"></script>
-  <!--end::Required Plugin(popperjs for Bootstrap 5)--><!--begin::Required Plugin(Bootstrap 5)-->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js"
-    crossorigin="anonymous"></script>
-  <!--end::Required Plugin(Bootstrap 5)--><!--begin::Required Plugin(AdminLTE)-->
-  <script src="../../js/adminlte/adminlte.js"></script>
-  <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
-  <script>
-    const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
-    const Default = {
-      scrollbarTheme: 'os-theme-light',
-      scrollbarAutoHide: 'leave',
-      scrollbarClickScroll: true,
-    };
-    document.addEventListener('DOMContentLoaded', function() {
-      const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
-      if (sidebarWrapper && OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined) {
-        OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-          scrollbars: {
-            theme: Default.scrollbarTheme,
-            autoHide: Default.scrollbarAutoHide,
-            clickScroll: Default.scrollbarClickScroll,
-          },
-        });
-      }
-    });
-  </script>
-  <!--end::OverlayScrollbars Configure-->
-  <!--end::Script-->
-</body>
-<!--end::Body-->
+            
+            <div class="card-body login-card-body">
+                <p class="login-box-msg text-muted">Masuk untuk mengakses area afiliasi</p>
 
+                <?php if ($message): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <?php echo $message; ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <?php endif; ?>
+
+                <form method="post">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <div class="input-group-text bg-light border-end-0">
+                                <span class="bi bi-envelope"></span>
+                            </div>
+                            <input type="email" class="form-control border-start-0 ps-0" id="email" name="email" placeholder="Email Address" value="<?php echo htmlspecialchars($email_input); ?>" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <div class="input-group-text bg-light border-end-0">
+                                <span class="bi bi-lock-fill"></span>
+                            </div>
+                            <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" placeholder="Password" required />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary fw-bold">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Sign In
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <p class="mb-1">
+                        <a href="forgot_password.php" class="text-decoration-none">Lupa kata sandi?</a>
+                    </p>
+                    <p class="mb-0">
+                        Belum punya akun? <a href="register.php" class="text-decoration-none fw-bold">Daftar sekarang</a>
+                    </p>
+                </div>
+            </div>
+            </div>
+        
+        <div class="text-center mt-3 text-muted small">
+            &copy; <?php echo date('Y'); ?> My Tahfidz. All rights reserved.
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js"></script>
+    <script src="../../js/adminlte/adminlte.js"></script>
+</body>
 </html>
