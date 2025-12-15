@@ -7,6 +7,6 @@
   <meta name='viewport' content='width=device-width, initial-scale=1'>
 </head>
 <body>
-  <script>window.location.href = './home/index.php'</script>
+  <script>window.location.href = './home/'</script>
 </body>
 </html>

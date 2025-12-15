@@ -19,7 +19,7 @@ if ($referral_code === 'N/A') {
 }
 
 // --- 2. Ambil Daftar Produk ---
-$products_res = supabase_fetch("/products?is_affiliate_visible=eq.true&select=id,name,commission_rate_price,path");
+$products_res = supabase_fetch("/products?is_affiliate_visible=eq.true&select=id,name,commission_rate_price,landing_page_url");
 $products = $products_res['data'] ?? [];
 
 // --- 3. Ambil Daftar Kursus LMS ---
@@ -164,7 +164,7 @@ $active = 'affiliate_link';
                         <?php else: ?>
                             <?php foreach ($products as $product): 
                                 $product_id = htmlspecialchars($product['id']);
-                                $referral_link = $product['path'] . "?ref=" . urlencode($referral_code);
+                                $referral_link = $product['landing_page_url'] . "?ref=" . urlencode($referral_code);
                             ?>
                             <div class="col-md-6 col-lg-6 mb-4">
                                 <div class="card card-link-generator card-outline card-success shadow-sm h-100">
