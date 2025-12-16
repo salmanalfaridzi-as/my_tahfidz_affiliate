@@ -5,99 +5,117 @@ include '../../functions.php';
 $message = null; 
 $error_message = null; 
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
     // Sanitasi Input
     $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
-    $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL); 
-    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING); 
+    $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
 
     if ($email && $password) { 
-        
         // ===============================================================
-        // 🚩 1. CEK PROFIL DULU (Sesuai Request)
+        // 🚩 1. CEK PROFIL DULU 
         // ===============================================================
-        $profile_res = supabase_fetch("/user_profile?email=eq.$email&select=user_id,role"); 
-        $existing_profile = $profile_res['data'][0] ?? null; 
+        $profile_res = supabase_fetch("/user_profile?email=eq.$email&select=user_id,role");
+        $existing_profile = $profile_res['data'][0] ?? null;
 
         $auth_user_id = null;
         $process_status = 'failed';
-        $is_new_registration = false; // Penanda untuk update status 'used' nanti
+        $is_new_registration = false;
 
         // ===============================================================
         // 🚩 2. LOGIC PERCABANGAN
         // ===============================================================
 
         // ---------------------------------------------------------------
-        // SKENARIO A: USER SUDAH ADA (Misal Role: Customer)
+        // SKENARIO A: USER SUDAH ADA
         // ---------------------------------------------------------------
-        if ($existing_profile) {
-            
+        if ($existing_profile) { 
             if ($existing_profile['role'] === 'affiliator') {
                 $error_message = "Akun ini sudah aktif sebagai Afiliasi. Silakan login.";
             } else {
                 // Verifikasi password via Auth Login
-                $auth_response = supabase_auth_request('/token?grant_type=password', [ 
+                $auth_response = supabase_auth_request('/token?grant_type=password', [
                     'email' => $email, 
-                    'password' => $password 
+                    'password' => $password
                 ]);
 
                 if ($auth_response['status'] !== 200) {
                     $error_message = "Email sudah terdaftar, namun password salah. Gunakan password akun Anda.";
                 } else {
                     $auth_user_id = $existing_profile['user_id'];
-                    
-                    // Upgrade role user yang sudah ada
+                    // Upgrade role
                     $update_role = supabase_fetch("/user_profile?user_id=eq.$auth_user_id", "PATCH", ['role' => 'affiliator']);
                     
                     if ($update_role['status'] == 204) {
                         $process_status = 'success';
-                        // Note: Kita tidak update status code jadi used disini, 
-                        // karena asumsinya user lama code-nya memang sudah used.
                     } else {
                         $error_message = "Gagal memperbarui role user.";
                     }
                 }
             }
-
         } 
         // ---------------------------------------------------------------
         // SKENARIO B: USER BARU (BELUM ADA DI USER_PROFILE)
         // ---------------------------------------------------------------
-        else {
-            // Cek Eligibility: HARUS UNUSED (Karena User Baru)
+        else { 
             $is_eligible = false;
-            $payment = 'none';
+            $payment_source = 'none'; // 'doku' atau 'scalev'
             $code_data = null;
             $trx_data = null;
 
-            // 1. Cek transaksi Xendit (Gateway Baru)
-            // login_status HARUS 'unused'
-            $trx_check = supabase_fetch("/transactions?customer_email=eq.$email&or=(status.eq.PAID,status.eq.SETTLED)&login_status=eq.unused&select=id,product_id,xendit_invoice_id");
-            $trx_data = $trx_check['data'][0] ?? null;
+            // 1. Cek Transaksi DOKU (Menggantikan Xendit)
+            // Syarat: login_status = unused DAN (status = SUCCESS atau PENDING)
+            // Note: Menggunakan kolom 'doku_invoice_number' asumsinya kolom di DB belum di-rename
+            $trx_check = supabase_fetch("/transactions?customer_email=eq.$email&login_status=eq.unused&or=(status.eq.SUCCESS,status.eq.PENDING)&select=id,product_id,doku_invoice_number,status,doku_request_id");
+            $trx_candidates = $trx_check['data'] ?? [];
+
+            foreach ($trx_candidates as $trx) {
+                // CASE 1: Sudah SUKSES (DOKU = SUCCESS)
+                if ($trx['status'] === 'SUCCESS') {
+                    $trx_data = $trx;
+                    break;
+                }
+                
+                // CASE 2: Masih PENDING -> Cek status real-time ke DOKU
+                if ($trx['status'] === 'PENDING') {
+                    if (!empty($trx['doku_invoice_number'])) {
+                        // Panggil Fungsi Cek Status DOKU (passing Invoice ID)
+                        check_and_update_doku_order_full($trx['doku_invoice_number'], $trx['doku_request_id']);
+                        
+                        // Cek Ulang Status di Database setelah update function dijalankan
+                        $recheck = supabase_fetch("/transactions?id=eq." . $trx['id'] . "&select=id,product_id,doku_invoice_number,status");
+                        $updated_trx = $recheck['data'][0] ?? null;
+
+                        // Jika status berubah jadi SUCCESS setelah dicek
+                        if ($updated_trx && $updated_trx['status'] === 'SUCCESS') {
+                            $trx_data = $updated_trx;
+                            break; // Valid, keluar loop
+                        }
+                    }
+                }
+            }
 
             if ($trx_data) {
-                $payment = 'xendit';
+                $payment_source = 'doku';
                 $is_eligible = true;
             } else {
-                // 2. Cek purchase codes (Gateway Lama)
-                // status HARUS 'unused'
+                // 2. Cek Purchase Codes (Scalev - Gateway Lama)
+                // Scalev logic: status code 'unused' (biasanya status pembayarannya PAID di sistem scalev, tapi di sini kita cek status kode)
                 $code_check = supabase_fetch("/purchase_codes?email=eq.$email&status=eq.unused&select=id,product_id,order_id");
                 $code_data = $code_check['data'][0] ?? null;
                 
                 if ($code_data) {
-                    $payment = 'scalev';
+                    $payment_source = 'scalev';
                     $is_eligible = true;
                 }
             }
 
             if (!$is_eligible) {
-                $error_message = "Email belum terdaftar pembelian atau kode sudah digunakan. Silakan beli paket baru.";
+                $error_message = "Email belum terdaftar pembelian yang BERHASIL (SUCCESS) atau pembayaran masih pending.";
             } elseif (strlen($password) < 6) {
                 $error_message = "Password minimal 6 karakter.";
             } else {
                 // --- PROSES REGISTER ---
-                
-                // 1. Daftarkan ke Supabase Auth
                 $signup_response = supabase_auth_request('/signup', [
                     'email' => $email,
                     'password' => $password
@@ -108,36 +126,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error_message = "Registrasi Gagal: $err_msg";
                 } else {
                     $auth_user_id = $signup_response['data']['id'] ?? ($signup_response['data']['user']['id'] ?? null);
-                    
+
                     if (!$auth_user_id) {
                         $error_message = "Gagal memproses ID user.";
                     } else {
-                        // 2. Insert ke User Profile (Data Spesifik yang diminta dijaga)
+                        // Insert User Profile
                         $profile_data = [
                             'user_id' => $auth_user_id,
                             'email' => $email,
                             'name' => $name ?: explode('@', $email)[0],
                             'role' => 'affiliator',
-                            'is_premium' => true,  // Sesuai request
-                            'status' => 'active'   // Sesuai request
+                            'is_premium' => true,
+                            'status' => 'active'
                         ];
 
-                        // Tambahkan info pembelian sesuai source (Xendit / Scalev)
-                        if ($payment === 'scalev' && $code_data) {
+                        // Simpan info pembelian
+                        if ($payment_source === 'scalev' && $code_data) {
                             $profile_data['jenis_package'] = $code_data['product_id'];
                             $profile_data['order_id'] = $code_data['order_id'];
-                        } elseif ($payment === 'xendit' && $trx_data) {
+                        } elseif ($payment_source === 'doku' && $trx_data) {
                             $profile_data['product_purchased'] = $trx_data['product_id'];
-                            $profile_data['order_id'] = $trx_data['xendit_invoice_id'];
+                            $profile_data['order_id'] = $trx_data['doku_invoice_number']; // ID Invoice Doku
                         }
-                        
+
                         $insert_profile = supabase_fetch("/user_profile", "POST", $profile_data);
-                        
+
                         if (isset($insert_profile['error'])) {
                             $error_message = "Gagal membuat profil user.";
                         } else {
                             $process_status = 'success';
-                            $is_new_registration = true; // Tandai untuk update status used nanti
+                            $is_new_registration = true;
                         }
                     }
                 }
@@ -145,10 +163,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // ===============================================================
-        // 🚩 3. FINALIZE (BUAT AFFILIATE & UPDATE STATUS)
+        // 🚩 3. FINALIZE 
         // ===============================================================
         if ($process_status === 'success' && $auth_user_id) {
-            
             // 3.A. Cek/Buat Affiliate Details
             $check_aff = supabase_fetch("/affiliate_details?user_id=eq.$auth_user_id&select=id");
             $aff_exists = $check_aff['data'][0] ?? null;
@@ -156,13 +173,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!$aff_exists) {
                 $referral_code = substr(strtoupper(md5(uniqid(rand(), true))), 0, 6);
-                $aff_insert = supabase_fetch("/affiliate_details", "POST", [ 
-                    'user_id' => $auth_user_id, 
-                    'referral_code' => $referral_code, 
-                    'wallet_balance' => 0 
+                $aff_insert = supabase_fetch("/affiliate_details", "POST", [
+                    'user_id' => $auth_user_id,
+                    'referral_code' => $referral_code,
+                    'wallet_balance' => 0
                 ]);
 
-                if ($aff_insert['status'] >= 200 && $aff_insert['status'] < 300) { 
+                if ($aff_insert['status'] >= 200 && $aff_insert['status'] < 300) {
                     $aff_success = true;
                 } else {
                     $error_message = "Gagal membuat dompet afiliasi.";
@@ -172,17 +189,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // 3.B. Update Status Pembelian jadi USED (HANYA JIKA USER BARU)
-            // Jika user lama (customer), kita tidak update karena asumsinya sudah used
             if ($aff_success) {
                 if ($is_new_registration) {
-                    // Update Transactions (Xendit)
-                    supabase_fetch("/transactions?customer_email=eq.$email&or=(status.eq.PAID,status.eq.SETTLED)", "PATCH", ['login_status' => 'used']);
+                    // Update Transactions (DOKU) -> Syarat status SUCCESS
+                    supabase_fetch("/transactions?customer_email=eq.$email&status=eq.SUCCESS", "PATCH", ['login_status' => 'used']);
 
-                    // Update Purchase Codes (Gateway Lama)
+                    // Update Purchase Codes (Scalev) -> Syarat status unused
                     supabase_fetch("/purchase_codes?email=eq.$email", "PATCH", ['status' => 'used']);
                 }
-
-                $message = "<b>Aktivasi Berhasil!</b> Akun Afiliasi Anda telah aktif."; 
+                
+                $message = "<b>Aktivasi Berhasil!</b> Akun Afiliasi Anda telah aktif.";
                 echo "<script>setTimeout(function(){ window.location.href = 'login.php'; }, 2000);</script>";
             }
         }
@@ -191,7 +207,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 } 
 ?>
-
 
 <!doctype html>
 <html lang="en">

@@ -164,7 +164,7 @@ $active = 'affiliate_link';
                         <?php else: ?>
                             <?php foreach ($products as $product): 
                                 $product_id = htmlspecialchars($product['id']);
-                                $referral_link = $product['landing_page_url'] . "?ref=" . urlencode($referral_code);
+                                $referral_link = $product['landing_page_url'] . "ref=" . urlencode($referral_code);
                             ?>
                             <div class="col-md-6 col-lg-6 mb-4">
                                 <div class="card card-link-generator card-outline card-success shadow-sm h-100">

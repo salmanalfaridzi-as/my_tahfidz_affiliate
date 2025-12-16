@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_checkout'])) {
     } elseif (!$selected_product_id) {
         $error_message = "Mohon pilih paket aplikasi yang ingin Anda beli.";
     } else {
-        $invoice_response = request_xendit_invoice(
+        $invoice_response = request_doku_invoice(
             $selected_product_id,
             $customer_email,
             $final_code_to_process
@@ -84,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_checkout'])) {
             header("Location: " . $redirect_url);
             exit;
         } else {
+            var_dump($invoice_response);
             $error_message = $invoice_response['data']['error'] ?? 'Gagal memproses pembayaran. Silakan coba lagi.';
         }
     }

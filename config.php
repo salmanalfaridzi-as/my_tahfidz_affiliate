@@ -16,5 +16,9 @@ define('XENDIT_SECRET_KEY', 'xnd_development_...'); // Ganti dengan Secret Key A
 define('REFERRAL_COOKIE_NAME', 'aff_ref_code');
 define('REFERRAL_COOKIE_EXPIRY', time() + (86400 * 30)); // 30 hari
 
+// --- Konfigurasi Aplikasi ---
+define('DOKU_CLIENT_ID', 'BRN-0201-1765784030963');
+define('DOKU_SECRET_KEY', 'SK-Pyhg2Hs61NwIHf4mb7ol');
+define('DOKU_BASE_URL', 'https://api-sandbox.doku.com'); 
 session_start();
 ?>
